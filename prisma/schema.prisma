@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
    provider = "prisma-client"
    output   = "../src/generated/prisma"
@@ -13,15 +8,21 @@ datasource db {
 }
 
 model User {
-   id            String    @id
-   name          String
-   email         String
-   emailVerified Boolean   @default(false)
-   image         String?
-   createdAt     DateTime  @default(now())
-   updatedAt     DateTime  @updatedAt
-   sessions      Session[]
-   accounts      Account[]
+   id                String            @id
+   name              String
+   email             String
+   emailVerified     Boolean           @default(false)
+   image             String?
+   createdAt         DateTime          @default(now())
+   updatedAt         DateTime          @updatedAt
+   sessions          Session[]
+   accounts          Account[]
+   wallets           Wallet[]
+   expenseCategories ExpenseCategory[]
+   budgets           Budget[]
+   savingsGoals      SavingsGoal[]
+   debts             Debt[]
+   notifications     Notification[]
 
    @@unique([email])
    @@map("user")
@@ -75,134 +76,245 @@ model Verification {
    @@map("verification")
 }
 
-model Skill {
-   id          String   @id @default(cuid())
-   name        String
-   slug        String   @unique
-   description String   @db.Text
-   iconKey     String?
-   isPublished Boolean  @default(false)
-   createdAt   DateTime @default(now())
-   updatedAt   DateTime @updatedAt
-
-   @@unique([name, iconKey])
-   @@map("skills")
+enum WalletType {
+   CASH
+   MOBILE_MONEY
+   BANK_ACCOUNT
+   SAVINGS
+   OTHER
 }
 
-model Work {
-   id          String    @id @default(cuid())
-   company     String
-   href        String?
-   title       String
-   description String    @db.Text
-   location    String?
-   logoUrl     String?
-   badges      String[]  @default([])
-   isPublished Boolean   @default(false)
-   start       DateTime
-   end         DateTime?
+enum TransactionType {
+   INCOME
+   EXPENSE
+   TRANSFER
+}
+
+enum BudgetPeriod {
+   WEEKLY
+   MONTHLY
+   YEARLY
+}
+
+enum DebtDirection {
+   I_OWE
+   OWED_TO_ME
+}
+
+enum DebtStatus {
+   ONGOING
+   SETTLED
+}
+
+enum NotificationType {
+   BUDGET_EXCEEDED
+   DEBT_DUE
+   REMINDER
+   GOAL_REACHED
+}
+
+model Wallet {
+   id             String     @id @default(cuid())
+   name           String
+   type           WalletType @default(CASH)
+   currency       String     @default("USD")
+   initialBalance Decimal    @default(0) @db.Decimal(14, 2)
+   isActive       Boolean    @default(true)
+
+   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+   userId String
+
+   transactions      Transaction[] @relation("WalletTransactions")
+   incomingTransfers Transaction[] @relation("TransferDestination")
+   savingsGoals      SavingsGoal[]
 
    createdAt DateTime @default(now())
    updatedAt DateTime @updatedAt
 
-   @@map("works")
+   @@unique([userId, name])
+   @@index([userId])
+   @@map("wallets")
 }
 
-model Education {
-   id          String    @id @default(cuid())
-   school      String
-   href        String?
-   degree      String
-   logoUrl     String?
-   description String?   @db.Text
-   isPublished Boolean   @default(false)
-   start       DateTime
-   end         DateTime?
-
-   grades Grade[]
-
-   createdAt DateTime @default(now())
-   updatedAt DateTime @updatedAt
-
-   @@map("educations")
-}
-
-model Grade {
-   id          String  @id @default(cuid())
-   name        String
-   description String? @db.Text
-   isPublished Boolean @default(false)
-
-   education   Education @relation(fields: [educationId], references: [id], onDelete: Cascade)
-   educationId String
-
-   createdAt DateTime @default(now())
-   updatedAt DateTime @updatedAt
-
-   @@map("grades")
-}
-
-model Project {
-   id           String    @id @default(cuid())
-   title        String
-   href         String?
-   description  String    @db.Text
-   technologies String[]  @default([])
-   image        String?
-   video        String?
-   isPublished  Boolean   @default(false)
-   start        DateTime
-   end          DateTime?
-
-   links ProjectLink[]
-
-   createdAt DateTime @default(now())
-   updatedAt DateTime @updatedAt
-
-   @@map("projects")
-}
-
-model ProjectLink {
-   id   String  @id @default(cuid())
-   type String
-   href String
-   icon String?
-
-   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-   projectId String
-
-   @@map("project_links")
-}
-
-model Hackathon {
-   id          String    @id @default(cuid())
-   title       String
-   location    String?
-   description String    @db.Text
-   image       String?
-   mlh         String?
-   win         String?
-   icon        String?
-   isPublished Boolean   @default(false)
-   start       DateTime
-   end         DateTime?
-
-   links HackathonLink[]
-
-   createdAt DateTime @default(now())
-   updatedAt DateTime @updatedAt
-
-   @@map("hackathons")
-}
-
-model HackathonLink {
-   id    String  @id @default(cuid())
-   title String
-   href  String
+model ExpenseCategory {
+   id    String          @id @default(cuid())
+   name  String
+   type  TransactionType
    icon  String?
+   color String?
 
-   hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
-   hackathonId String
+   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+   userId String
 
-   @@map("hackathon_links")
+   subCategories ExpenseSubCategory[]
+   transactions  Transaction[]
+   budgets       Budget[]
+
+   createdAt DateTime @default(now())
+   updatedAt DateTime @updatedAt
+
+   @@unique([userId, name, type])
+   @@index([userId])
+   @@map("expense_categories")
+}
+
+model ExpenseSubCategory {
+   id   String @id @default(cuid())
+   name String
+
+   category   ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+   categoryId String
+
+   transactions Transaction[]
+
+   createdAt DateTime @default(now())
+   updatedAt DateTime @updatedAt
+
+   @@unique([categoryId, name])
+   @@map("expense_sub_categories")
+}
+
+model Transaction {
+   id          String          @id @default(cuid())
+   amount      Decimal         @db.Decimal(14, 2)
+   type        TransactionType
+   date        DateTime        @default(now())
+   description String?
+   note        String?         @db.Text
+
+   wallet   Wallet @relation("WalletTransactions", fields: [walletId], references: [id], onDelete: Cascade)
+   walletId String
+
+   // Only used when type = TRANSFER
+   destinationWallet   Wallet? @relation("TransferDestination", fields: [destinationWalletId], references: [id], onDelete: SetNull)
+   destinationWalletId String?
+
+   // Optional because a TRANSFER has no category
+   category   ExpenseCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+   categoryId String?
+
+   subCategory   ExpenseSubCategory? @relation(fields: [subCategoryId], references: [id], onDelete: SetNull)
+   subCategoryId String?
+
+   attachments Attachment[]
+
+   createdAt DateTime @default(now())
+   updatedAt DateTime @updatedAt
+
+   @@index([walletId, date])
+   @@index([categoryId])
+   @@index([date])
+   @@map("transactions")
+}
+
+model Attachment {
+   id       String  @id @default(cuid())
+   filePath String
+   fileType String?
+
+   transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+   transactionId String
+
+   createdAt DateTime @default(now())
+
+   @@index([transactionId])
+   @@map("attachments")
+}
+
+model Budget {
+   id             String       @id @default(cuid())
+   limitAmount    Decimal      @db.Decimal(14, 2)
+   period         BudgetPeriod @default(MONTHLY)
+   startDate      DateTime
+   endDate        DateTime?
+   alertThreshold Int          @default(80) // % of the limit that triggers an alert
+
+   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+   userId String
+
+   // Null = global budget (all expenses)
+   category   ExpenseCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+   categoryId String?
+
+   notifications Notification[]
+
+   createdAt DateTime @default(now())
+   updatedAt DateTime @updatedAt
+
+   @@index([userId])
+   @@map("budgets")
+}
+
+model SavingsGoal {
+   id            String    @id @default(cuid())
+   title         String
+   targetAmount  Decimal   @db.Decimal(14, 2)
+   currentAmount Decimal   @default(0) @db.Decimal(14, 2)
+   deadline      DateTime?
+   isAchieved    Boolean   @default(false)
+
+   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+   userId String
+
+   wallet   Wallet? @relation(fields: [walletId], references: [id], onDelete: SetNull)
+   walletId String?
+
+   createdAt DateTime @default(now())
+   updatedAt DateTime @updatedAt
+
+   @@index([userId])
+   @@map("savings_goals")
+}
+
+model Debt {
+   id        String        @id @default(cuid())
+   person    String
+   amount    Decimal       @db.Decimal(14, 2)
+   direction DebtDirection
+   dueDate   DateTime?
+   status    DebtStatus    @default(ONGOING)
+   note      String?       @db.Text
+
+   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+   userId String
+
+   repayments Repayment[]
+
+   createdAt DateTime @default(now())
+   updatedAt DateTime @updatedAt
+
+   @@index([userId, status])
+   @@map("debts")
+}
+
+model Repayment {
+   id     String   @id @default(cuid())
+   amount Decimal  @db.Decimal(14, 2)
+   date   DateTime @default(now())
+
+   debt   Debt   @relation(fields: [debtId], references: [id], onDelete: Cascade)
+   debtId String
+
+   createdAt DateTime @default(now())
+
+   @@index([debtId])
+   @@map("repayments")
+}
+
+model Notification {
+   id      String           @id @default(cuid())
+   message String
+   type    NotificationType
+   isRead  Boolean          @default(false)
+
+   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+   userId String
+
+   budget   Budget? @relation(fields: [budgetId], references: [id], onDelete: SetNull)
+   budgetId String?
+
+   createdAt DateTime @default(now())
+
+   @@index([userId, isRead])
+   @@map("notifications")
 }

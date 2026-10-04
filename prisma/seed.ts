@@ -1,286 +1,10 @@
 import { prisma } from "#/lib/prisma";
 import { auth } from "#/lib/auth";
-import { faker } from '@faker-js/faker';
+import { faker } from "@faker-js/faker";
 
-const SKILLS = [
-	{ name: "React", slug: "react", icon: "REACT" },
-	{ name: "Next.js", slug: "nextjs", icon: "NEXTJS" },
-	{ name: "TypeScript", slug: "typescript", icon: "TYPESCRIPT" },
-	{ name: "Node.js", slug: "nodejs", icon: "NODEJS" },
-	{ name: "Python", slug: "python", icon: "PYTHON" },
-	{ name: "Go", slug: "go", icon: "GO" },
-	{ name: "PostgreSQL", slug: "postgres", icon: "POSTGRES" },
-	{ name: "Docker", slug: "docker", icon: "DOCKER" },
-	{ name: "Kubernetes", slug: "kubernetes", icon: "KUBERNETES" },
-	{ name: "Java", slug: "java", icon: "JAVA" },
-	{ name: "C++", slug: "cpp", icon: "CPP" },
-] as const;
+const DEFAULT_EMAIL = process.env.SEED_EMAIL ?? "laurentmwn@gmail.com";
+const DEFAULT_PASSWORD = process.env.SEED_PASSWORD ?? "@Labeya123";
 
-const WORKS = [
-	{
-		company: "Atomic Finance",
-		href: "https://atomic.finance",
-		title: "Bitcoin Protocol Engineer",
-		location: "Remote",
-		logoUrl: "/atomic.png",
-		badges: [] as string[],
-		start: new Date("2021-05-01"),
-		end: new Date("2022-10-01"),
-	},
-	{
-		company: "Shopify",
-		href: "https://shopify.com",
-		title: "Software Engineer",
-		location: "Remote",
-		logoUrl: "/shopify.svg",
-		badges: [] as string[],
-		start: new Date("2021-01-01"),
-		end: new Date("2021-04-01"),
-	},
-	{
-		company: "Nvidia",
-		href: "https://nvidia.com/",
-		title: "Software Engineer",
-		location: "Santa Clara, CA",
-		logoUrl: "/nvidia.png",
-		badges: [] as string[],
-		start: new Date("2020-01-01"),
-		end: new Date("2020-04-01"),
-	},
-	{
-		company: "Splunk",
-		href: "https://splunk.com",
-		title: "Software Engineer",
-		location: "San Jose, CA",
-		logoUrl: "/splunk.svg",
-		badges: [] as string[],
-		start: new Date("2019-01-01"),
-		end: new Date("2019-04-01"),
-	},
-	{
-		company: "Lime",
-		href: "https://li.me/",
-		title: "Software Engineer",
-		location: "San Francisco, CA",
-		logoUrl: "/lime.svg",
-		badges: [] as string[],
-		start: new Date("2018-01-01"),
-		end: new Date("2018-04-01"),
-	},
-	{
-		company: "Mitre Media",
-		href: "https://mitremedia.com/",
-		title: "Software Engineer",
-		location: "Toronto, ON",
-		logoUrl: "/mitremedia.png",
-		badges: [] as string[],
-		start: new Date("2017-05-01"),
-		end: new Date("2017-08-01"),
-	},
-] as const;
-
-const EDUCATIONS = [
-	{
-		school: "Buildspace",
-		href: "https://buildspace.so",
-		degree: "s3, s4, sf1, s5",
-		logoUrl: "/buildspace.jpg",
-		start: new Date("2023-01-01"),
-		end: new Date("2024-01-01"),
-		grades: ["s3", "s4", "sf1", "s5"],
-	},
-	{
-		school: "University of Waterloo",
-		href: "https://uwaterloo.ca",
-		degree: "Bachelor's Degree of Computer Science (BCS)",
-		logoUrl: "/waterloo.png",
-		start: new Date("2016-01-01"),
-		end: new Date("2021-01-01"),
-		grades: ["Year 1", "Year 2", "Year 3", "Year 4"],
-	},
-	{
-		school: "Wilfrid Laurier University",
-		href: "https://wlu.ca",
-		degree: "Bachelor's Degree of Business Administration (BBA)",
-		logoUrl: "/laurier.png",
-		start: new Date("2016-01-01"),
-		end: new Date("2021-01-01"),
-		grades: ["Year 1", "Year 2"],
-	},
-	{
-		school: "International Baccalaureate",
-		href: "https://ibo.org",
-		degree: "IB Diploma",
-		logoUrl: "/ib.png",
-		start: new Date("2012-01-01"),
-		end: new Date("2016-01-01"),
-		grades: ["Grade 11", "Grade 12"],
-	},
-] as const;
-
-const PROJECTS = [
-	{
-		title: "Chat Collect",
-		href: "https://chatcollect.com",
-		start: new Date("2024-01-01"),
-		end: new Date("2024-02-01") as Date | null,
-		active: true,
-		technologies: ["Next.js", "Typescript", "PostgreSQL", "Prisma", "TailwindCSS", "Stripe"],
-		image: "",
-		video: "https://pub-83c5db439b40468498f97946200806f7.r2.dev/chat-collect.mp4",
-		links: [{ type: "Website", href: "https://chatcollect.com", icon: "globe" }],
-	},
-	{
-		title: "Magic UI",
-		href: "https://magicui.design",
-		start: new Date("2023-06-01"),
-		end: null as Date | null,
-		active: true,
-		technologies: ["Next.js", "Typescript", "PostgreSQL", "Prisma", "TailwindCSS", "Stripe"],
-		image: "",
-		video: "https://cdn.magicui.design/bento-grid.mp4",
-		links: [
-			{ type: "Website", href: "https://magicui.design", icon: "globe" },
-			{ type: "Source", href: "https://github.com/magicuidesign/magicui", icon: "github" },
-		],
-	},
-	{
-		title: "llm.report",
-		href: "https://llm.report",
-		start: new Date("2023-04-01"),
-		end: new Date("2023-09-01") as Date | null,
-		active: true,
-		technologies: ["Next.js", "Typescript", "PostgreSQL", "Prisma", "Cloudflare Workers"],
-		image: "",
-		video: "https://cdn.llm.report/openai-demo.mp4",
-		links: [
-			{ type: "Website", href: "https://llm.report", icon: "globe" },
-			{ type: "Source", href: "https://github.com/dillionverma/llm.report", icon: "github" },
-		],
-	},
-	{
-		title: "Automatic Chat",
-		href: "https://automatic.chat",
-		start: new Date("2023-04-01"),
-		end: new Date("2024-03-01") as Date | null,
-		active: true,
-		technologies: ["Next.js", "Typescript", "PostgreSQL", "Prisma", "Cloudflare Workers"],
-		image: "",
-		video: "https://pub-83c5db439b40468498f97946200806f7.r2.dev/automatic-chat.mp4",
-		links: [{ type: "Website", href: "https://automatic.chat", icon: "globe" }],
-	},
-] as const;
-
-const HACKATHONS = [
-	{
-		title: "Hack Western 5",
-		location: "London, Ontario",
-		start: new Date("2018-11-23"),
-		end: new Date("2018-11-25") as Date | null,
-		image: "https://pub-83c5db439b40468498f97946200806f7.r2.dev/hackline/hack-western.png",
-		mlh: "https://s3.amazonaws.com/logged-assets/trust-badge/2019/mlh-trust-badge-2019-white.svg" as string | null,
-		win: null as string | null,
-		icon: null as string | null,
-		links: [] as { title: string; href: string; icon: string | null }[],
-	},
-	{
-		title: "Hack The North",
-		location: "Waterloo, Ontario",
-		start: new Date("2018-09-14"),
-		end: new Date("2018-09-16") as Date | null,
-		image: "https://pub-83c5db439b40468498f97946200806f7.r2.dev/hackline/hack-the-north.png",
-		mlh: "https://s3.amazonaws.com/logged-assets/trust-badge/2019/mlh-trust-badge-2019-white.svg" as string | null,
-		win: null as string | null,
-		icon: null as string | null,
-		links: [] as { title: string; href: string; icon: string | null }[],
-	},
-	{
-		title: "FirstNet Public Safety Hackathon",
-		location: "San Francisco, California",
-		start: new Date("2018-03-23"),
-		end: new Date("2018-03-24") as Date | null,
-		image: "https://pub-83c5db439b40468498f97946200806f7.r2.dev/hackline/firstnet.png",
-		mlh: null as string | null,
-		win: null as string | null,
-		icon: "public" as string | null,
-		links: [] as { title: string; href: string; icon: string | null }[],
-	},
-	{
-		title: "DeveloperWeek Hackathon",
-		location: "San Francisco, California",
-		start: new Date("2018-02-03"),
-		end: new Date("2018-02-04") as Date | null,
-		image: "https://pub-83c5db439b40468498f97946200806f7.r2.dev/hackline/developer-week.jpg",
-		mlh: null as string | null,
-		win: null as string | null,
-		icon: null as string | null,
-		links: [{ title: "Github", href: "https://github.com/cryptotrends/cryptotrends", icon: "github" }],
-	},
-	{
-		title: "HackDavis",
-		location: "Davis, California",
-		start: new Date("2018-01-20"),
-		end: new Date("2018-01-21") as Date | null,
-		image: "https://pub-83c5db439b40468498f97946200806f7.r2.dev/hackline/hack-davis.png",
-		mlh: "https://s3.amazonaws.com/logged-assets/trust-badge/2018/white.svg" as string | null,
-		win: "Best Data Hack" as string | null,
-		icon: null as string | null,
-		links: [
-			{ title: "Devpost", href: "https://devpost.com/software/my6footprint", icon: "globe" },
-			{ title: "ML", href: "https://github.com/Wallet6/my6footprint-machine-learning", icon: "github" },
-			{ title: "iOS", href: "https://github.com/Wallet6/CarbonWallet", icon: "github" },
-			{ title: "Server", href: "https://github.com/Wallet6/wallet6-server", icon: "github" },
-		],
-	},
-	{
-		title: "ETH Waterloo",
-		location: "Waterloo, Ontario",
-		start: new Date("2017-10-13"),
-		end: new Date("2017-10-15") as Date | null,
-		image: "https://pub-83c5db439b40468498f97946200806f7.r2.dev/hackline/eth-waterloo.png",
-		mlh: null as string | null,
-		win: null as string | null,
-		icon: null as string | null,
-		links: [{ title: "Organization", href: "https://github.com/ethdocnet", icon: "github" }],
-	},
-	{
-		title: "StartHacks I",
-		location: "Waterloo, Ontario",
-		start: new Date("2017-03-04"),
-		end: new Date("2017-03-05") as Date | null,
-		image: "https://pub-83c5db439b40468498f97946200806f7.r2.dev/hackline/starthacks.png",
-		mlh: "https://s3.amazonaws.com/logged-assets/trust-badge/2017/white.svg" as string | null,
-		win: "1st Place Winner" as string | null,
-		icon: null as string | null,
-		links: [
-			{ title: "Source (Mobile)", href: "https://github.com/mattBlackDesign/recipic-ionic", icon: "github" },
-			{ title: "Source (Server)", href: "https://github.com/mattBlackDesign/recipic-rails", icon: "github" },
-		],
-	},
-] as const;
-
-const BLOG_CATEGORIES = [
-	{ name: "React", slug: "react" },
-	{ name: "Next.js", slug: "nextjs" },
-	{ name: "TypeScript", slug: "typescript" },
-	{ name: "Node.js", slug: "nodejs" },
-	{ name: "Python", slug: "python" },
-] as const;
-
-const BLOG_COUNT = 8;
-const MAX_COMMENTS_PER_POST = 4;
-
-const DEFAULT_EMAIL = "laurentmwn@gmail.com";
-const DEFAULT_PASSWORD = "@Labeya123";
-
-function slugify(str: string) {
-	return str
-		.toLowerCase()
-		.normalize("NFD")
-		.replace(/[\u0300-\u036f]/g, "")
-		.replace(/[^a-z0-9]+/g, "-")
-		.replace(/(^-|-$)/g, "");
-}
 
 async function authSeeder() {
 	const result = await auth.api.signUpEmail({
@@ -295,225 +19,281 @@ async function authSeeder() {
 		where: { id: result.user.id },
 		data: { emailVerified: true },
 	});
+
+	return result.user.id;
 }
 
-async function skillSeeder() {
-	await Promise.all(
-		SKILLS.map((sk, k) =>
-			prisma.skill.create({
+// ============================================================
+// DATA
+// ============================================================
+
+const WALLETS = [
+	{ name: "Cash", type: "CASH", currency: "USD", initialBalance: 150 },
+	{ name: "Mobile Money", type: "MOBILE_MONEY", currency: "USD", initialBalance: 80 },
+	{ name: "Bank Account", type: "BANK_ACCOUNT", currency: "USD", initialBalance: 1200 },
+	{ name: "Emergency Fund", type: "SAVINGS", currency: "USD", initialBalance: 500 },
+] as const;
+
+type CategorySeed = {
+	name: string;
+	type: "INCOME" | "EXPENSE";
+	icon: string;
+	color: string;
+	subs: string[];
+};
+
+const EXPENSE_CATEGORIES: CategorySeed[] = [
+	{ name: "Salary", type: "INCOME", icon: "briefcase", color: "#16a34a", subs: [] },
+	{ name: "Freelance", type: "INCOME", icon: "laptop", color: "#22c55e", subs: [] },
+	{ name: "Gifts", type: "INCOME", icon: "gift", color: "#84cc16", subs: [] },
+	{ name: "Food", type: "EXPENSE", icon: "utensils", color: "#f97316", subs: ["Groceries", "Restaurants", "Street food"] },
+	{ name: "Transport", type: "EXPENSE", icon: "bus", color: "#3b82f6", subs: ["Taxi", "Fuel", "Public transport"] },
+	{ name: "Rent", type: "EXPENSE", icon: "home", color: "#8b5cf6", subs: [] },
+	{ name: "Utilities", type: "EXPENSE", icon: "zap", color: "#eab308", subs: ["Electricity", "Water"] },
+	{ name: "Airtime & Internet", type: "EXPENSE", icon: "wifi", color: "#06b6d4", subs: [] },
+	{ name: "Health", type: "EXPENSE", icon: "heart-pulse", color: "#ef4444", subs: ["Pharmacy", "Consultation"] },
+	{ name: "Entertainment", type: "EXPENSE", icon: "film", color: "#ec4899", subs: ["Cinema", "Outings"] },
+	{ name: "Education", type: "EXPENSE", icon: "book", color: "#14b8a6", subs: [] },
+];
+
+const BUDGETS = [
+	{ category: "Food", limitAmount: 200, alertThreshold: 80 },
+	{ category: "Transport", limitAmount: 80, alertThreshold: 75 },
+	{ category: "Entertainment", limitAmount: 60, alertThreshold: 90 },
+	{ category: null, limitAmount: 700, alertThreshold: 85 }, // global budget
+] as const;
+
+type TxSeed = {
+	amount: number;
+	type: "INCOME" | "EXPENSE" | "TRANSFER";
+	date: Date;
+	description: string;
+	walletId: string;
+	destinationWalletId?: string;
+	categoryId?: string;
+	subCategoryId?: string;
+};
+
+// ============================================================
+// SEEDERS
+// ============================================================
+
+async function walletSeeder(userId: string) {
+	return Promise.all(WALLETS.map((w) => prisma.wallet.create({ data: { ...w, userId } })));
+}
+
+async function expenseCategorySeeder(userId: string) {
+	return Promise.all(
+		EXPENSE_CATEGORIES.map((c) =>
+			prisma.expenseCategory.create({
 				data: {
-					name: sk.name,
-					slug: sk.slug,
-					iconKey: sk.icon,
-					description: faker.lorem.sentence(),
-					isPublished: k % 2 === 0,
+					name: c.name,
+					type: c.type,
+					icon: c.icon,
+					color: c.color,
+					userId,
+					subCategories: { create: c.subs.map((name) => ({ name })) },
+				},
+				include: { subCategories: true },
+			})
+		)
+	);
+}
+
+type SeededWallet = Awaited<ReturnType<typeof walletSeeder>>[number];
+type SeededCategory = Awaited<ReturnType<typeof expenseCategorySeeder>>[number];
+
+function monthDate(monthsAgo: number, day: number) {
+	const now = new Date();
+	return new Date(now.getFullYear(), now.getMonth() - monthsAgo, day, 9, 0, 0);
+}
+
+async function transactionSeeder(wallets: SeededWallet[], categories: SeededCategory[]) {
+	const wallet = (name: string) => wallets.find((w) => w.name === name)!;
+	const category = (name: string) => categories.find((c) => c.name === name)!;
+
+	const cash = wallet("Cash");
+	const mobile = wallet("Mobile Money");
+	const bank = wallet("Bank Account");
+
+	const rows: TxSeed[] = [];
+
+	// 1. Monthly entries for the last 3 months, recorded as plain transactions
+	for (let m = 0; m < 3; m++) {
+		rows.push({
+			amount: 900,
+			type: "INCOME",
+			date: monthDate(m, 1),
+			description: "Monthly salary",
+			walletId: bank.id,
+			categoryId: category("Salary").id,
+		});
+
+		rows.push({
+			amount: 250,
+			type: "EXPENSE",
+			date: monthDate(m, 3),
+			description: "Rent",
+			walletId: bank.id,
+			categoryId: category("Rent").id,
+		});
+
+		rows.push({
+			amount: 20,
+			type: "EXPENSE",
+			date: monthDate(m, 5),
+			description: "Internet subscription",
+			walletId: mobile.id,
+			categoryId: category("Airtime & Internet").id,
+		});
+
+		// Transfer: bank -> mobile money (no category)
+		rows.push({
+			amount: 150,
+			type: "TRANSFER",
+			date: monthDate(m, 6),
+			description: "Top up mobile money",
+			walletId: bank.id,
+			destinationWalletId: mobile.id,
+		});
+
+		rows.push({
+			amount: faker.number.int({ min: 50, max: 250 }),
+			type: "INCOME",
+			date: monthDate(m, faker.number.int({ min: 10, max: 25 })),
+			description: "Freelance mission",
+			walletId: mobile.id,
+			categoryId: category("Freelance").id,
+		});
+	}
+
+	const variableCategories = categories.filter(
+		(c) => c.type === "EXPENSE" && !["Rent", "Airtime & Internet"].includes(c.name)
+	);
+
+	for (const w of [cash, mobile]) {
+		for (let i = 0; i < 25; i++) {
+			const cat = faker.helpers.arrayElement(variableCategories);
+			const sub = cat.subCategories.length > 0 ? faker.helpers.arrayElement(cat.subCategories) : undefined;
+
+			rows.push({
+				amount: faker.number.int({ min: 2, max: 40 }),
+				type: "EXPENSE",
+				date: faker.date.recent({ days: 90 }),
+				description: faker.lorem.words(3),
+				walletId: w.id,
+				categoryId: cat.id,
+				subCategoryId: sub?.id,
+			});
+		}
+	}
+
+	await prisma.transaction.createMany({ data: rows });
+}
+
+async function budgetSeeder(userId: string, categories: SeededCategory[]) {
+	const now = new Date();
+	const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+	const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+	return Promise.all(
+		BUDGETS.map((b) =>
+			prisma.budget.create({
+				data: {
+					userId,
+					limitAmount: b.limitAmount,
+					alertThreshold: b.alertThreshold,
+					period: "MONTHLY",
+					startDate,
+					endDate,
+					categoryId: b.category ? categories.find((c) => c.name === b.category)!.id : null,
 				},
 			})
 		)
 	);
 }
 
-async function workSeeder() {
-	await Promise.all(
-		WORKS.map((w, k) =>
-			prisma.work.create({
-				data: {
-					company: w.company,
-					href: w.href,
-					title: w.title,
-					location: w.location,
-					logoUrl: w.logoUrl,
-					badges: [...w.badges],
-					description: faker.lorem.paragraph(),
-					start: w.start,
-					end: w.end,
-					isPublished: k % 2 === 0,
-				},
-			})
-		)
-	);
+async function savingsGoalSeeder(userId: string, wallets: SeededWallet[]) {
+	const savings = wallets.find((w) => w.name === "Emergency Fund")!;
+	const inSixMonths = new Date();
+	inSixMonths.setMonth(inSixMonths.getMonth() + 6);
+
+	await prisma.savingsGoal.createMany({
+		data: [
+			{ userId, title: "New laptop", targetAmount: 800, currentAmount: 250, deadline: inSixMonths },
+			{ userId, title: "Emergency fund", targetAmount: 2000, currentAmount: 500, walletId: savings.id },
+		],
+	});
 }
 
-async function educationSeeder() {
-	await Promise.all(
-		EDUCATIONS.map(async (edu, k) => {
-			const created = await prisma.education.create({
-				data: {
-					school: edu.school,
-					href: edu.href,
-					degree: edu.degree,
-					logoUrl: edu.logoUrl,
-					description: faker.lorem.paragraph(),
-					start: edu.start,
-					end: edu.end,
-					isPublished: k % 2 === 0,
-				},
-			});
+async function debtSeeder(userId: string) {
+	const inDays = (n: number) => new Date(Date.now() + n * 24 * 60 * 60 * 1000);
 
-			await Promise.all(
-				edu.grades.map((name, j) =>
-					prisma.grade.create({
-						data: {
-							name,
-							description: faker.lorem.sentence(),
-							isPublished: j % 2 === 0,
-							educationId: created.id,
-						},
-					})
-				)
-			);
-		})
-	);
-}
-
-async function projectSeeder() {
-	await Promise.all(
-		PROJECTS.map(async (p, k) => {
-			const created = await prisma.project.create({
-				data: {
-					title: p.title,
-					href: p.href,
-					description: faker.lorem.paragraph(),
-					technologies: [...p.technologies],
-					image: p.image,
-					video: p.video,
-					start: p.start,
-					end: p.end,
-					isPublished: k % 2 === 0,
-				},
-			});
-
-			await Promise.all(
-				p.links.map((link) =>
-					prisma.projectLink.create({
-						data: {
-							type: link.type,
-							href: link.href,
-							icon: link.icon,
-							projectId: created.id,
-						},
-					})
-				)
-			);
-		})
-	);
-}
-
-async function hackathonSeeder() {
-	await Promise.all(
-		HACKATHONS.map(async (h, k) => {
-			const created = await prisma.hackathon.create({
-				data: {
-					title: h.title,
-					location: h.location,
-					description: faker.lorem.paragraph(),
-					image: h.image,
-					mlh: h.mlh,
-					win: h.win,
-					icon: h.icon,
-					start: h.start,
-					end: h.end,
-					isPublished: k % 2 === 0,
-				},
-			});
-
-			await Promise.all(
-				h.links.map((link) =>
-					prisma.hackathonLink.create({
-						data: {
-							title: link.title,
-							href: link.href,
-							icon: link.icon,
-							hackathonId: created.id,
-						},
-					})
-				)
-			);
-		})
-	);
-}
-
-async function blogCategorySeeder() {
-	await Promise.all(
-		BLOG_CATEGORIES.map((category) =>
-			prisma.category.create({
-				data: {
-					title: category.name,
-					slug: category.slug,
-					description: faker.lorem.sentence(),
-					isPublished: true,
-				},
-			})
-		)
-	);
-}
-
-async function blogSeeder() {
-	const categories = await prisma.category.findMany();
-
-	const posts = Array.from({ length: BLOG_COUNT }).map(() => {
-		const title = faker.lorem.sentence({ min: 8, max: 14 }).replace(/\.$/, "");
-		return {
-			title,
-			slug: slugify(title),
-			description: faker.lorem.sentence({ min: 12, max: 20 }),
-			content: faker.lorem.paragraphs({ min: 4, max: 8 }, "\n\n"),
-			isPublished: faker.datatype.boolean(),
-			createdAt: faker.date.past({ years: 2 }),
-			categoryId: faker.helpers.arrayElement(categories)?.id,
-		};
+	await prisma.debt.create({
+		data: {
+			userId,
+			person: faker.person.fullName(),
+			amount: 120,
+			direction: "OWED_TO_ME",
+			dueDate: inDays(30),
+			repayments: { create: [{ amount: 40, date: inDays(-5) }] },
+		},
 	});
 
-	await Promise.all(
-		posts.map((blog) =>
-			prisma.post.create({
-				data: {
-					title: blog.title,
-					slug: blog.slug,
-					description: blog.description,
-					content: blog.content,
-					isPublished: blog.isPublished,
-					createdAt: blog.createdAt,
-					updatedAt: blog.createdAt,
-					categoryId: blog.categoryId,
-				},
-			})
-		)
-	);
+	await prisma.debt.create({
+		data: {
+			userId,
+			person: faker.person.fullName(),
+			amount: 60,
+			direction: "I_OWE",
+			dueDate: inDays(14),
+		},
+	});
+
+	await prisma.debt.create({
+		data: {
+			userId,
+			person: faker.person.fullName(),
+			amount: 30,
+			direction: "I_OWE",
+			status: "SETTLED",
+			repayments: { create: [{ amount: 30, date: inDays(-20) }] },
+		},
+	});
 }
 
-async function blogCommentSeeder() {
-	const posts = await prisma.post.findMany();
-	const categories = await prisma.category.findMany();
-
-	await Promise.all(
-		posts.flatMap((post) =>
-			Array.from({ length: faker.number.int({ min: 0, max: MAX_COMMENTS_PER_POST }) }).map(() =>
-				prisma.postComment.create({
-					data: {
-						postId: post.id,
-						username: faker.internet.username(),
-						content: faker.lorem.sentence({ min: 5, max: 15 }),
-						categoryId: faker.helpers.arrayElement(categories)?.id,
-						createdAt: faker.date.recent({ days: 60 }),
-						updatedAt: faker.date.recent({ days: 60 }),
-					},
-				})
-			)
-		)
-	);
+async function notificationSeeder(userId: string, budgets: Awaited<ReturnType<typeof budgetSeeder>>) {
+	await prisma.notification.createMany({
+		data: [
+			{
+				userId,
+				budgetId: budgets[0]?.id,
+				type: "BUDGET_EXCEEDED",
+				message: "You have reached 80% of your monthly Food budget.",
+			},
+			{ userId, type: "DEBT_DUE", message: "A debt is due in 14 days." },
+			{ userId, type: "REMINDER", message: "Don't forget to record today's expenses.", isRead: true },
+		],
+	});
 }
+
+// ============================================================
+// MAIN
+// ============================================================
 
 async function main() {
-	await authSeeder();
-	await skillSeeder();
-	await workSeeder();
-	await educationSeeder();
-	await projectSeeder();
-	await hackathonSeeder();
-	await blogCategorySeeder();
-	await blogSeeder();
-	await blogCommentSeeder();
+	const userId = await authSeeder();
+
+	const wallets = await walletSeeder(userId);
+	const categories = await expenseCategorySeeder(userId);
+
+	await transactionSeeder(wallets, categories);
+
+	const budgets = await budgetSeeder(userId, categories);
+
+	await savingsGoalSeeder(userId, wallets);
+	await debtSeeder(userId);
+	await notificationSeeder(userId, budgets);
 }
 
 main()
